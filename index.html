@@ -1,0 +1,71 @@
+<!doctype html>
+<html lang="pt-BR">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="theme-color" content="#191b17">
+  <meta name="description" content="Exposição interativa sobre a história da radiação, curiosidades e aplicações modernas.">
+  <title>História da Radiação · Painel Museu</title>
+  <link rel="stylesheet" href="styles.css">
+  <script type="module" src="app.js"></script>
+</head>
+<body>
+  <a class="skip" href="#acervo">Ir para o acervo</a>
+  <header class="top" id="inicio">
+    <div class="shell top-inner">
+      <a class="brand" href="#inicio"><span aria-hidden="true">☢</span> Painel Museu</a>
+      <nav aria-label="Seções da exposição">
+        <a href="#historia" data-filter="historia">História</a>
+        <a href="#curiosidades" data-filter="curiosidades">Curiosidades</a>
+        <a href="#aplicacoes" data-filter="aplicacoes">Aplicações</a>
+      </nav>
+    </div>
+  </header>
+  <main>
+    <section class="hero" aria-labelledby="titulo">
+      <div class="shell hero-inner">
+        <div class="hero-copy">
+          <p class="eyebrow"><span></span> Exposição digital</p>
+          <h1 id="titulo">História da<br><em>Radiação</em></h1>
+          <p>Das primeiras descobertas aos usos atuais, explore como a radiação transformou a ciência e o cotidiano.</p>
+          <a class="primary" href="#acervo">Explorar o acervo</a>
+        </div>
+        <div class="hero-art" aria-hidden="true">
+          <div class="orbit outer"></div><div class="orbit inner"></div>
+          <img class="atom" src="assets/atomo.webp" alt="">
+          <img class="portrait" src="assets/curie.webp" alt="">
+        </div>
+      </div>
+    </section>
+    <section class="shell collection" id="acervo" aria-labelledby="acervo-titulo">
+      <div class="collection-head">
+        <div>
+          <h2 id="acervo-titulo">Explore o acervo</h2>
+          <p>Escolha um tema para abrir a ficha da exposição.</p>
+        </div>
+        <label class="search"><span>Buscar no acervo</span><input id="busca" type="search" placeholder="Ex. Marie Curie, raios X"></label>
+      </div>
+      <div class="filters" aria-label="Filtrar por seção">
+        <button type="button" data-filter="todos" aria-pressed="true">Todos</button>
+        <button type="button" data-filter="historia" aria-pressed="false">História</button>
+        <button type="button" data-filter="curiosidades" aria-pressed="false">Curiosidades</button>
+        <button type="button" data-filter="aplicacoes" aria-pressed="false">Aplicações modernas</button>
+      </div>
+      <p id="resultados" class="results" role="status"></p>
+      <div class="grid" id="fichas"></div>
+      <noscript>Ative o JavaScript para navegar pelas fichas da exposição.</noscript>
+    </section>
+  </main>
+  <footer><div class="shell footer-inner"><span>História da Radiação</span><a href="#inicio">Voltar ao início</a></div></footer>
+  <dialog aria-labelledby="ficha-titulo">
+    <div class="dialog-inner">
+      <form method="dialog"><button class="close" aria-label="Fechar ficha" autofocus>×</button></form>
+      <div id="ficha"></div>
+      <div class="dialog-nav">
+        <button type="button" id="anterior">Anterior</button>
+        <button type="button" id="proximo">Próxima ficha</button>
+      </div>
+    </div>
+  </dialog>
+</body>
+</html>
