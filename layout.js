@@ -62,7 +62,7 @@ historyPageIds.forEach((id, i) => {
 export const slideDetails = {
   fluoroscopio: { bg: 'deck/det-fluoroscopio.webp', video: 'deck/fluoroscopio.mp4', box: { x: 112, y: 182, w: 321, h: 568 } },
   pintoras: { bg: 'deck/det-radium.webp', video: 'deck/radium.mp4', box: { x: 125, y: 180, w: 351, h: 626 } },
-  melhoramento: { bg: 'deck/det-melhoramento.webp', video: 'deck/melhoramento.mp4', box: { x: 119, y: 180, w: 321, h: 568 } },
+  melhoramento: { bg: 'deck/det-melhoramento.webp', video: 'deck/melhoramento.mp4', box: { x: 118, y: 176, w: 348, h: 580 } },
   energia: { bg: 'deck/det-energia.webp', video: 'deck/energia.mp4', box: { x: 125, y: 177, w: 344, h: 611 } },
 }
 
