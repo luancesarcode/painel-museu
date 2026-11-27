@@ -66,7 +66,7 @@ function buildPage(id) {
   let html = `<img class="bg" src="${page.bg}" alt="">`
   if (page.strip) {
     html += `<h1 class="sr">${theme.name}</h1>
-      <div class="strip"><div class="strip-track">${page.strip.map(ids => `<div class="strip-page">${page.tiles.map((rect, i) => tileHtml(rect, byId[ids[i]])).join('')}</div>`).join('')}</div></div>
+      <div class="strip"><div class="strip-track">${page.strip.map((ids, p) => `<div class="strip-page">${page.tiles.map((rect, i) => tileHtml(rect, byId[ids[i]], p === 0)).join('')}</div>`).join('')}</div></div>
       <button type="button" class="nav-arrow prev" style="${box({ ...arrow, x: arrow.x - 110 })}" data-scroll="-1" aria-label="Página anterior">${arrowSvg}</button>
       <button type="button" class="nav-arrow next" style="${box(arrow)}" data-scroll="1" aria-label="Próxima página">${arrowSvg}</button>
       <div class="page-count" aria-hidden="true">1 / ${page.strip.length}</div>`
@@ -80,10 +80,10 @@ function buildPage(id) {
   if (page.strip) initStrip(el, page.strip.length)
 }
 
-function tileHtml(rect, item) {
+function tileHtml(rect, item, eager = false) {
   if (!item) return `<div class="tile empty" style="${box(rect)}" aria-hidden="true"></div>`
   return `<button type="button" class="tile ${item.hazard ? 'hazard' : ''}" style="${box(rect)}" data-go="item:${item.id}" aria-label="${esc(item.period ? `${item.period}: ${item.title}` : item.title)}">
-    <img src="assets/${item.image}.webp" alt="" loading="lazy">
+    <img src="assets/${item.image}.webp" alt="" loading="${eager ? 'eager' : 'lazy'}">
     <span>${item.period ? `<b>${esc(item.period)}</b>` : ''}${esc(item.title)}</span></button>`
 }
 
@@ -205,12 +205,26 @@ function pickTransition(from, to) {
   return TRANSITIONS[`${from}>${to}`] ?? 'fade'
 }
 
-function go(target) {
+// Só mostra uma tela quando todas as imagens dela já estão decodificadas; assim nada "pisca"
+// ou entra aos poucos por cima da tela anterior.
+function ready(el) {
+  const imgs = [...el.querySelectorAll('img')].filter(img => !img.closest('.strip-page:not(:first-child)'))
+  const loads = imgs.map(img => (img.decode ? img.decode().catch(() => {}) : Promise.resolve()))
+  const limit = new Promise(resolve => setTimeout(resolve, 3000))
+  return Promise.race([Promise.all(loads), limit])
+}
+
+let navToken = 0
+
+async function go(target) {
   const id = resolve(target)
+  const token = ++navToken
   if (id === current) return
   ensure(id)
+  await ready(screens[id])
+  if (token !== navToken) return // outro toque chegou enquanto carregava
   finishTransition?.()
-  if (pages[id]) { originPage = id; preload(pages[id].next) }
+  if (pages[id]) { originPage = id; if (pages[id].next) preload(pages[id].next) }
 
   const previous = screens[current]
   const next = screens[id]
@@ -345,6 +359,11 @@ addEventListener('touchend', event => {
   lastTouch = now
 }, { passive: false })
 
-for (const id of Object.keys(pages)) preload(id)
 ensure('menu')
 go('menu')
+
+// Aquece o cache com as imagens grandes das telas seguintes, sem atrapalhar o menu.
+setTimeout(() => {
+  const warm = [...Object.values(pages).map(p => p.bg), ...Object.values(slideDetails).map(d => d.bg), ...Object.values(themes).map(t => t.bg)]
+  new Set(warm).forEach(src => { new Image().src = src })
+}, 1500)
