@@ -127,7 +127,7 @@ function buildDetail(id) {
       <h1 class="title ${titleSize}">${esc(item.title)}</h1>
       ${item.period ? `<p class="period ${item.hazard ? 'hazard' : ''}">${item.hazard ? '☢ ' : ''}${esc(item.period)}</p>` : ''}
       <div class="gallery ${photos.length > 1 ? 'multi' : ''}">
-        <figure class="photo ${item.object ? 'object' : ''}"><img class="main" src="assets/${photos[0]}.webp" alt=""></figure>
+        <figure class="photo ${item.object ? 'object' : ''}" style="--bg:url(assets/${photos[0]}.webp)"><img class="main" src="assets/${photos[0]}.webp" alt=""></figure>
         ${photos.length > 1 ? `<div class="thumbs">${photos.map((p, i) => `<button type="button" class="thumb ${i ? '' : 'on'}" data-photo="assets/${p}.webp" aria-label="Foto ${i + 1}"><img src="assets/${p}.webp" alt=""></button>`).join('')}</div>` : ''}
       </div>
       <div class="copy size-${size}">${item.summary ? `<p class="lead">${esc(item.summary)}</p>` : ''}${item.description.split('\n').filter(Boolean).map(p => `<p>${esc(p)}</p>`).join('')}</div>
@@ -221,6 +221,7 @@ stage.addEventListener('click', event => {
   if (thumb) {
     const gallery = thumb.closest('.gallery')
     gallery.querySelector('.main').src = thumb.dataset.photo
+    gallery.querySelector('.photo').style.setProperty('--bg', `url(${thumb.dataset.photo})`)
     gallery.querySelectorAll('.thumb').forEach(t => t.classList.toggle('on', t === thumb))
     return
   }
@@ -238,6 +239,23 @@ stage.addEventListener('click', event => {
 
 stage.addEventListener('ended', event => {
   event.target.closest?.('.video-wrap')?.classList.remove('playing')
+}, true)
+
+// Foto de proporção parecida com a moldura preenche tudo (sem faixas); as bem diferentes
+// (retratos, panorâmicas) ficam inteiras sobre um fundo desfocado da própria foto.
+stage.addEventListener('load', event => {
+  const img = event.target
+  if (!img.classList?.contains('main')) return
+  const frame = img.closest('.photo')
+  const ratio = (img.naturalWidth / img.naturalHeight) / (frame.clientWidth / frame.clientHeight)
+  const fills = ratio > 0.8 && ratio < 1.25
+  img.classList.toggle('fill', fills)
+  // Ficha com uma foto só: a moldura acompanha a proporção da foto, sem sobras.
+  const gallery = frame.closest('.gallery')
+  if (!gallery.classList.contains('multi') && !fills) {
+    frame.style.flex = 'none'
+    frame.style.height = `${Math.min(740, 700 / (img.naturalWidth / img.naturalHeight))}px`
+  }
 }, true)
 
 /* ---------- palco, ociosidade e modo quiosque ---------- */

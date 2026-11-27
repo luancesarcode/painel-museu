@@ -102,7 +102,11 @@ noscript { color: #fff; }
 /* Galeria de fotos nas fichas */
 .gallery { position: absolute; left: 110px; top: 210px; width: 700px; height: 740px; display: flex; flex-direction: column; gap: 22px; }
 .gallery .photo { position: relative; left: 0; top: 0; width: 100%; height: 100%; flex: 1; min-height: 0; }
-.gallery .photo img { object-fit: contain; background: #0d0b09; padding: 0; }
+.gallery .photo img { position: relative; z-index: 1; object-fit: contain; padding: 0; }
+/* Sobras do quadro são preenchidas com a própria foto desfocada (nunca faixas pretas) */
+.gallery .photo::before { content: ""; position: absolute; inset: -40px; background: var(--bg) center / cover; filter: blur(30px) brightness(.55) saturate(1.1); }
+.gallery .photo.object::before { display: none; }
+.gallery .photo.object img { background: radial-gradient(ellipse, #6a4a26, #1d1710); }
 .gallery.multi .photo { height: auto; }
 .thumbs { display: flex; gap: 14px; flex: none; height: 130px; }
 .thumb { flex: 1; min-width: 0; max-width: 170px; border-radius: 14px; overflow: hidden; border: 4px solid transparent; opacity: .65; transition: opacity .15s, border-color .15s, transform .15s; background: #0d0b09; }
@@ -121,3 +125,6 @@ noscript { color: #fff; }
 .detail .title.mid { font-size: 52px; }
 .detail .title.long { font-size: 42px; line-height: 1.12; top: 22px; }
 .period.hazard { color: #ff9a6b !important; }
+
+.gallery .photo img.fill { object-fit: cover; }
+.gallery:not(.multi) { justify-content: center; }
