@@ -15,29 +15,24 @@ export const themes = {
   aplicacoes: { name: 'Aplicações Modernas da Radiação', label: 'APLICAÇÕES MODERNAS DA RADIAÇÃO', bg: 'deck/bg-azul.webp', icon: 'deck/ico-atomo.webp', tone: 'blue' },
 }
 
-// Cada página de grade é uma imagem de fundo com as miniaturas já desenhadas;
-// "tiles" são as áreas de toque, na mesma ordem das miniaturas.
+// Cada tema tem folhas de grade: uma imagem de fundo com as miniaturas já desenhadas, mais as áreas de
+// toque ("tiles") na mesma ordem das miniaturas. As folhas de um tema ficam lado a lado numa faixa rolável.
+const sheet = (bg, items) => ({ bg, tiles: grid(colsA, colsA, 175, 580), items })
+
 export const pages = {
-  // A História tem uma página para cada 10 eventos da linha do tempo (montadas abaixo).
   cur1: {
-    theme: 'curiosidades', bg: 'deck/curiosidades1.webp', next: 'cur2',
-    tiles: grid(colsA, colsA, 175, 580),
-    items: ['trem', 'raio-x-beleza', 'fluoroscopio', 'pintoras', 'carro', 'brinquedos', 'joias', 'radithor', 'dentifricio', 'cosmetico'],
-  },
-  cur2: {
-    theme: 'curiosidades', bg: 'deck/curiosidades2.webp', next: 'cur1',
-    tiles: grid(colsA, colsA, 175, 580),
-    items: ['parker', 'uralina', 'cadernos', 'simbolo', 'relogios', 'saque', 'oklo', 'atomik', 'experimentos', 'pararaios'],
+    theme: 'curiosidades',
+    sheets: [
+      sheet('deck/curiosidades1.webp', ['trem', 'raio-x-beleza', 'fluoroscopio', 'pintoras', 'carro', 'brinquedos', 'joias', 'radithor', 'dentifricio', 'cosmetico']),
+      sheet('deck/curiosidades2.webp', ['parker', 'uralina', 'cadernos', 'simbolo', 'relogios', 'saque', 'oklo', 'atomik', 'experimentos', 'pararaios']),
+    ],
   },
   apl1: {
-    theme: 'aplicacoes', bg: 'deck/aplicacoes1.webp', next: 'apl2',
-    tiles: grid(colsA, colsA, 175, 580),
-    items: ['melhoramento', 'diagnostico', 'radioterapia', 'nuclear', 'esterilizacao', 'alimentos', 'pragas', 'aeroporto', 'cargas', 'fumaca'],
-  },
-  apl2: {
-    theme: 'aplicacoes', bg: 'deck/aplicacoes2.webp', next: 'apl1',
-    tiles: grid(colsA, colsA, 175, 580),
-    items: ['energia', 'ambiente', 'industria', 'inspecao', 'gemas', 'qualidade', 'arqueologia', 'petroleo', 'insetos', 'protecao'],
+    theme: 'aplicacoes',
+    sheets: [
+      sheet('deck/aplicacoes1.webp', ['melhoramento', 'diagnostico', 'radioterapia', 'nuclear', 'esterilizacao', 'alimentos', 'pragas', 'aeroporto', 'cargas', 'fumaca']),
+      sheet('deck/aplicacoes2.webp', ['energia', 'ambiente', 'industria', 'inspecao', 'gemas', 'qualidade', 'arqueologia', 'petroleo', 'insetos', 'protecao']),
+    ],
   },
 }
 

@@ -1,5 +1,5 @@
 import { exhibits } from './acervo.js'
-import { themes, pages, slideDetails, arrow, menuButton } from './layout.js'
+import { themes, pages, slideDetails } from './layout.js'
 
 const W = 1920
 const H = 1080
@@ -33,10 +33,6 @@ function hot(rect, label, action, extra = '') {
   return `<button type="button" class="hot ${extra}" style="${box(rect)}" aria-label="${esc(label)}" data-go="${action}"></button>`
 }
 
-function backToMenu(rect = menuButton) {
-  return hot(rect, 'Voltar ao menu principal', 'menu', 'hot-button')
-}
-
 /* ---------- menu ---------- */
 
 function buildMenu() {
@@ -63,21 +59,20 @@ function buildMenu() {
 function buildPage(id) {
   const page = pages[id]
   const theme = themes[page.theme]
-  let html = `<img class="bg" src="${page.bg}" alt="">`
+  let html
+  let total
   if (page.strip) {
-    html += `<h1 class="sr">${theme.name}</h1>
-      <div class="strip"><div class="strip-track">${page.strip.map((ids, p) => `<div class="strip-page">${page.tiles.map((rect, i) => tileHtml(rect, byId[ids[i]], p === 0)).join('')}</div>`).join('')}</div></div>
-      <button type="button" class="nav-arrow prev" style="${box({ ...arrow, x: arrow.x - 110 })}" data-scroll="-1" aria-label="Página anterior">${arrowSvg}</button>
-      <button type="button" class="nav-arrow next" style="${box(arrow)}" data-scroll="1" aria-label="Próxima página">${arrowSvg}</button>
-      <div class="page-count" aria-hidden="true">1 / ${page.strip.length}</div>`
+    total = page.strip.length
+    html = `<img class="bg" src="${page.bg}" alt=""><h1 class="sr">${theme.name}</h1>
+      <div class="strip"><div class="strip-track">${page.strip.map((ids, p) => `<div class="strip-page">${page.tiles.map((rect, i) => tileHtml(rect, byId[ids[i]], p === 0)).join('')}</div>`).join('')}</div></div>`
   } else {
-    html += `<h1 class="sr">${theme.name}</h1>`
-    html += page.tiles.map((rect, i) => hot(rect, byId[page.items[i]].title, `item:${page.items[i]}`)).join('')
+    // Folhas de imagem lado a lado, rolando na horizontal.
+    total = page.sheets.length
+    html = `<h1 class="sr">${theme.name}</h1>
+      <div class="strip"><div class="strip-track">${page.sheets.map(sheet => `<div class="strip-page"><img class="bg" src="${sheet.bg}" alt="">${sheet.tiles.map((rect, i) => hot(rect, byId[sheet.items[i]].title, `item:${sheet.items[i]}`)).join('')}</div>`).join('')}</div></div>`
   }
-  if (page.next) html += hot(arrow, 'Próxima página', page.next, 'hot-round')
-  html += backToMenu(page.back)
   const el = screen(id, `page tone-${theme.tone}`, html)
-  if (page.strip) initStrip(el, page.strip.length)
+  initStrip(el, total)
 }
 
 function tileHtml(rect, item, eager = false) {
@@ -90,7 +85,6 @@ function tileHtml(rect, item, eager = false) {
 // Faixa rolável da História: deslizar com o dedo, rodinha do mouse ou setas.
 function initStrip(el, total) {
   const strip = el.querySelector('.strip')
-  const count = el.querySelector('.page-count')
   const index = () => Math.min(total - 1, Math.max(0, Math.round(strip.scrollLeft / W)))
   // "target" é a página pedida; cliques rápidos nas setas somam em vez de se perderem no meio da animação.
   let target = 0
@@ -98,8 +92,9 @@ function initStrip(el, total) {
     target = (i + total) % total
     strip.scrollTo({ left: target * W, behavior: 'smooth' })
   }
+  el.pager = { total, index, step: delta => goTo(target + delta) }
   strip.addEventListener('scrollend', () => { target = index() })
-  strip.addEventListener('scroll', () => { count.textContent = `${index() + 1} / ${total}` }, { passive: true })
+  strip.addEventListener('scroll', () => { if (screens[current] === el) syncDock() }, { passive: true })
   let wheelLock = 0
   strip.addEventListener('wheel', event => {
     event.preventDefault()
@@ -110,10 +105,6 @@ function initStrip(el, total) {
     wheelLock = now + 550
     goTo(target + Math.sign(delta))
   }, { passive: false })
-  el.addEventListener('click', event => {
-    const nav = event.target.closest('[data-scroll]')
-    if (nav) goTo(target + Number(nav.dataset.scroll))
-  })
   el.addEventListener('keydown', event => {
     if (event.key === 'ArrowRight') goTo(target + 1)
     if (event.key === 'ArrowLeft') goTo(target - 1)
@@ -121,8 +112,6 @@ function initStrip(el, total) {
 }
 
 /* ---------- fichas ---------- */
-
-const arrowSvg = `<svg viewBox="0 0 100 100" aria-hidden="true"><circle cx="50" cy="50" r="46" fill="currentColor"/><path d="M26 50h40M50 30l22 20-22 20" fill="none" stroke="#06140b" stroke-width="10" stroke-linecap="round" stroke-linejoin="round" transform="rotate(180 50 50)"/></svg>`
 
 function videoBlock(src, rect) {
   return `<div class="video-wrap" style="${box(rect)}">
@@ -149,9 +138,7 @@ function buildDetail(id) {
   let html
   if (slide) {
     html = `<img class="bg" src="${slide.bg}" alt=""><h1 class="sr">${esc(item.title)}</h1>
-      ${videoBlock(slide.video, slide.box)}
-      ${hot(arrow, 'Voltar para a lista', 'back', 'hot-round')}
-      ${backToMenu()}`
+      ${videoBlock(slide.video, slide.box)}`
   } else {
     const photos = item.images ?? [item.image]
     const size = item.description.length > 900 ? 'xs' : item.description.length > 700 ? 's' : item.description.length > 450 ? 'm' : 'l'
@@ -165,12 +152,44 @@ function buildDetail(id) {
         ${photos.length > 1 ? `<div class="thumbs">${photos.map((p, i) => `<button type="button" class="thumb ${i ? '' : 'on'}" data-photo="assets/${p}.webp" aria-label="Foto ${i + 1}"><img src="assets/${p}.webp" alt=""></button>`).join('')}</div>` : ''}
       </div>
       <div class="copy size-${size}">${item.summary ? `<p class="lead">${esc(item.summary)}</p>` : ''}${item.description.split('\n').filter(Boolean).map(p => `<p>${esc(p)}</p>`).join('')}</div>
-      <button type="button" class="back-arrow" data-go="back" aria-label="Voltar para a lista">${arrowSvg}</button>
-      <button type="button" class="menu-btn" data-go="menu">Voltar ao Menu Principal</button>`
+`
   }
   const el = screen(`item:${id}`, `detail tone-${theme.tone}`, html)
   el.dataset.item = id
   fitText(el.querySelector('.copy'))
+}
+
+/* ---------- barra de navegação (fica fora do conteúdo das telas) ---------- */
+
+const icon = {
+  back: '<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M15 5l-7 7 7 7" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"/></svg>',
+  home: '<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M3 11l9-8 9 8M5.5 9.5V20h5v-6h3v6h5V9.5" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"/></svg>',
+  next: '<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M9 5l7 7-7 7" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"/></svg>',
+}
+
+const dock = document.createElement('nav')
+dock.className = 'dock'
+dock.dataset.mode = 'hidden'
+dock.setAttribute('aria-label', 'Navegação')
+dock.innerHTML = `
+  <button type="button" class="dock-btn" data-show="item" data-go="back">${icon.back}<span>Voltar</span></button>
+  <div class="dock-pager" data-show="page">
+    <button type="button" class="dock-round" data-pager="-1" aria-label="Página anterior">${icon.back}</button>
+    <span class="dock-count" aria-live="polite">1 / 1</span>
+    <button type="button" class="dock-round" data-pager="1" aria-label="Próxima página">${icon.next}</button>
+  </div>
+  <button type="button" class="dock-btn" data-show="page" data-go="menu">${icon.home}<span>Voltar ao Menu</span></button>`
+stage.append(dock)
+
+function syncDock() {
+  const el = screens[current]
+  const mode = !el || current === 'menu' ? 'hidden' : el.dataset.item ? 'item' : 'page'
+  dock.dataset.mode = mode
+  dock.dataset.tone = [...(el?.classList ?? [])].find(c => c.startsWith('tone-'))?.slice(5) ?? 'gold'
+  if (mode === 'page' && el.pager) {
+    dock.querySelector('.dock-count').textContent = `${el.pager.index() + 1} / ${el.pager.total}`
+    dock.classList.toggle('single', el.pager.total < 2)
+  }
 }
 
 /* ---------- navegação ---------- */
@@ -187,22 +206,10 @@ function ensure(id) {
   else buildPage(id)
 }
 
-function preload(id) {
-  const src = pages[id]?.bg
-  if (src) new Image().src = src
-}
-
-// Transições do slide original: menu = fade (0,7 s); Curiosidades 2 = cobrir; Aplicações 2 = puxar.
-const TRANSITIONS = {
-  'cur1>cur2': 'cover', 'cur2>cur1': 'cover',
-  'apl1>apl2': 'pull', 'apl2>apl1': 'pull',
-}
 let finishTransition = null
 
 function pickTransition(from, to) {
-  if (to === 'menu') return 'fade-slow'
-  if (pages[from]?.custom && pages[to]?.custom) return pages[from].next === to ? 'cover' : 'cover-back'
-  return TRANSITIONS[`${from}>${to}`] ?? 'fade'
+  return to === 'menu' ? 'fade-slow' : 'fade'
 }
 
 // Só mostra uma tela quando todas as imagens dela já estão decodificadas; assim nada "pisca"
@@ -224,12 +231,13 @@ async function go(target) {
   await ready(screens[id])
   if (token !== navToken) return // outro toque chegou enquanto carregava
   finishTransition?.()
-  if (pages[id]) { originPage = id; if (pages[id].next) preload(pages[id].next) }
+  if (pages[id]) originPage = id
 
   const previous = screens[current]
   const next = screens[id]
   const kind = previous ? pickTransition(current, id) : 'none'
   current = id
+  syncDock()
 
   if (previous) {
     previous.querySelectorAll('video').forEach(video => {
@@ -253,6 +261,8 @@ async function go(target) {
     finishTransition = done
   }
 
+  // Folhas seguintes da faixa: decodifica agora, em segundo plano, para a rolagem não "piscar".
+  next.querySelectorAll('.strip-page:not(:first-child) img.bg').forEach(img => img.decode?.().catch(() => {}))
   next.querySelector('.menu-video')?.play().catch(() => {})
   const wrap = next.querySelector('.video-wrap')
   if (wrap) playVideo(wrap)
@@ -281,6 +291,8 @@ stage.addEventListener('click', event => {
     else { video.pause(); wrap.classList.remove('playing') }
     return
   }
+  const pager = event.target.closest('[data-pager]')
+  if (pager) { screens[current]?.pager?.step(Number(pager.dataset.pager)); return }
   const target = event.target.closest('[data-go]')
   if (target) go(target.dataset.go)
 })
@@ -306,27 +318,14 @@ stage.addEventListener('load', event => {
   }
 }, true)
 
-// Deslizar para o lado troca de página nas grades de Curiosidades e Aplicações.
-let swipe = null
-stage.addEventListener('pointerdown', event => { swipe = { x: event.clientX, y: event.clientY, t: Date.now() } })
-stage.addEventListener('pointerup', event => {
-  if (!swipe) return
-  const dx = event.clientX - swipe.x
-  const dy = event.clientY - swipe.y
-  const fast = Date.now() - swipe.t < 700
-  swipe = null
-  const page = pages[current]
-  if (page?.next && !page.strip && fast && Math.abs(dx) > 140 * parseFloat(stage.style.getPropertyValue('--scale') || 1) && Math.abs(dy) < Math.abs(dx) / 2) go(page.next)
-})
-
 /* ---------- palco, ociosidade e modo quiosque ---------- */
 
 // Escala o palco 1920x1080 para caber em qualquer janela ou TV (HD, 4K, vertical, etc.).
 function fit() {
-  const root = document.documentElement
-  const vw = root.clientWidth || innerWidth
-  const vh = root.clientHeight || innerHeight
-  stage.style.setProperty('--scale', Math.min(vw / W, vh / H))
+  const vw = window.innerWidth
+  const vh = window.innerHeight
+  const scale = Math.min(vw / W, vh / H)
+  stage.style.transform = `translate(${(vw - W * scale) / 2}px, ${(vh - H * scale) / 2}px) scale(${scale})`
 }
 addEventListener('resize', fit)
 addEventListener('orientationchange', fit)
@@ -364,6 +363,6 @@ go('menu')
 
 // Aquece o cache com as imagens grandes das telas seguintes, sem atrapalhar o menu.
 setTimeout(() => {
-  const warm = [...Object.values(pages).map(p => p.bg), ...Object.values(slideDetails).map(d => d.bg), ...Object.values(themes).map(t => t.bg)]
+  const warm = [...Object.values(pages).flatMap(p => p.sheets?.map(s => s.bg) ?? [p.bg]), ...Object.values(slideDetails).map(d => d.bg), ...Object.values(themes).map(t => t.bg)]
   new Set(warm).forEach(src => { new Image().src = src })
 }, 1500)
