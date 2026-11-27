@@ -17,7 +17,19 @@ export const themes = {
 
 // Cada tema tem folhas de grade: uma imagem de fundo com as miniaturas já desenhadas, mais as áreas de
 // toque ("tiles") na mesma ordem das miniaturas. As folhas de um tema ficam lado a lado numa faixa rolável.
-const sheet = (bg, items) => ({ bg, tiles: grid(colsA, colsA, 175, 580), items })
+const sheet = (bg, items) => ({ bg, tiles: grid(colsA, colsA, 175, 580, 297, 297 + 64), items })
+
+// Legendas das miniaturas (refeitas em HTML, maiores que as do slide).
+export const captions = {
+  trem: 'Trem Atômico Quase Existiu', 'raio-x-beleza': 'O Raio X da Beleza', fluoroscopio: 'Fluoroscópio de Calçados', pintoras: 'Meninas do Radium', carro: 'Carro Atômico',
+  brinquedos: 'Brinquedos Atômicos', joias: 'Joias Radioativas?', radithor: 'Bebidas Revigorantes', dentifricio: 'Creme Dental', cosmetico: 'Creme de Beleza',
+  parker: 'O Sonho Atômico da Parker', uralina: 'Vidros de Uralina', cadernos: 'Cadernos de Marie Curie', simbolo: 'Aviso de Radiação Ionizante', relogios: 'Relógios com Tinta de Rádio',
+  saque: 'Saquê de Fukushima', oklo: 'O Reator Natural de Oklo', atomik: 'A Vodca Atomik de Chernobil', experimentos: 'Experimentos Secretos com Plutônio', pararaios: 'Para-raios Radioativos',
+  melhoramento: 'Melhoramento Genético de Plantas', diagnostico: 'Radiografia, Tomografia e PET Scan', radioterapia: 'Radioterapia', nuclear: 'Medicina Nuclear', esterilizacao: 'Esterilização de Materiais Médicos',
+  alimentos: 'Irradiação de Alimentos', pragas: 'Controle de Insetos-Praga', aeroporto: 'Segurança Aeroportuária', cargas: 'Inspeção de Cargas e Contêineres', fumaca: 'Detectores de Fumaça',
+  energia: 'Geração de Energia', ambiente: 'Monitoramento Ambiental', industria: 'Aplicação Industrial', inspecao: 'Inspeção Industrial', gemas: 'Colorização de Gemas',
+  qualidade: 'Controle de Qualidade Industrial', arqueologia: 'Datação Arqueológica', petroleo: 'Exploração de Petróleo e Gás', insetos: 'Insetos Comestíveis: É Seguro?', protecao: 'Radioproteção',
+}
 
 export const pages = {
   cur1: {

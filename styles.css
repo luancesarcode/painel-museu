@@ -140,3 +140,16 @@ noscript { color: #fff; }
 .dock-round svg { width: 40px; height: 40px; }
 .dock-count { min-width: 120px; text-align: center; font: 700 34px Georgia, serif; color: var(--dock); letter-spacing: .06em; }
 .dock-btn:active, .dock-round:active { transform: scale(.94); filter: brightness(1.25); }
+
+/* Legendas das miniaturas das grades (Curiosidades e Aplicações) */
+.cap-tile { display: block; }
+.cap { position: absolute; left: -18px; right: -18px; bottom: 0; height: 64px; display: flex; align-items: flex-start; justify-content: center; text-align: center; font: 700 28px/1.14 "Open Sans", system-ui, sans-serif; color: #fff7d6; text-shadow: 0 0 10px rgba(0, 0, 0, .95), 0 2px 4px rgba(0, 0, 0, .95); pointer-events: none; }
+.tone-blue .cap { color: #d9f8ff; }
+.tile span { font-size: 27px; }
+.tile span b { font-size: 34px; }
+
+/* Tela cheia */
+.fs-btn { position: absolute; top: 24px; right: 28px; z-index: 11; width: 76px; height: 76px; border-radius: 50%; display: grid; place-items: center; color: #fff; background: rgba(8, 10, 14, .62); border: 2px solid rgba(255, 255, 255, .6); -webkit-backdrop-filter: blur(8px); backdrop-filter: blur(8px); box-shadow: 0 6px 20px rgba(0, 0, 0, .5); transition: transform .15s, background .15s; }
+.fs-btn[hidden] { display: none; }
+.fs-btn svg { width: 40px; height: 40px; }
+.fs-btn:active { transform: scale(.92); background: rgba(255, 255, 255, .25); }

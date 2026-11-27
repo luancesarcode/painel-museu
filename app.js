@@ -1,5 +1,5 @@
 import { exhibits } from './acervo.js'
-import { themes, pages, slideDetails } from './layout.js'
+import { themes, pages, slideDetails, captions } from './layout.js'
 
 const W = 1920
 const H = 1080
@@ -69,10 +69,16 @@ function buildPage(id) {
     // Folhas de imagem lado a lado, rolando na horizontal.
     total = page.sheets.length
     html = `<h1 class="sr">${theme.name}</h1>
-      <div class="strip"><div class="strip-track">${page.sheets.map(sheet => `<div class="strip-page"><img class="bg" src="${sheet.bg}" alt="">${sheet.tiles.map((rect, i) => hot(rect, byId[sheet.items[i]].title, `item:${sheet.items[i]}`)).join('')}</div>`).join('')}</div></div>`
+      <div class="strip"><div class="strip-track">${page.sheets.map(sheet => `<div class="strip-page"><img class="bg" src="${sheet.bg}" alt="">${sheet.tiles.map((rect, i) => captionTile(rect, sheet.items[i])).join('')}</div>`).join('')}</div></div>`
   }
   const el = screen(id, `page tone-${theme.tone}`, html)
   initStrip(el, total)
+}
+
+// Área de toque sobre a miniatura do slide, com a legenda escrita em HTML (grande e legível).
+function captionTile(rect, id) {
+  const text = captions[id] ?? byId[id].title
+  return `<button type="button" class="hot cap-tile" style="${box(rect)}" data-go="item:${id}" aria-label="${esc(text)}"><span class="cap">${esc(text)}</span></button>`
 }
 
 function tileHtml(rect, item, eager = false) {
@@ -191,6 +197,35 @@ function syncDock() {
     dock.classList.toggle('single', el.pager.total < 2)
   }
 }
+
+/* ---------- botão de tela cheia (canto superior direito, em todas as telas) ---------- */
+
+const fsIcon = {
+  expand: '<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 9V4h5M20 9V4h-5M4 15v5h5M20 15v5h-5" fill="none" stroke="currentColor" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round"/></svg>',
+  compress: '<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M9 4v5H4M15 4v5h5M9 20v-5H4M15 20v-5h5" fill="none" stroke="currentColor" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round"/></svg>',
+}
+const root = document.documentElement
+const enterFullscreen = root.requestFullscreen ?? root.webkitRequestFullscreen
+const fsElement = () => document.fullscreenElement ?? document.webkitFullscreenElement
+const fsButton = document.createElement('button')
+fsButton.type = 'button'
+fsButton.className = 'fs-btn'
+function syncFullscreen() {
+  const on = Boolean(fsElement())
+  fsButton.innerHTML = on ? fsIcon.compress : fsIcon.expand
+  fsButton.setAttribute('aria-label', on ? 'Sair da tela cheia' : 'Tela cheia')
+  fsButton.title = on ? 'Sair da tela cheia' : 'Tela cheia'
+}
+function toggleFullscreen() {
+  if (fsElement()) (document.exitFullscreen ?? document.webkitExitFullscreen).call(document)
+  else enterFullscreen?.call(root, { navigationUI: 'hide' })?.catch?.(() => {})
+}
+fsButton.addEventListener('click', toggleFullscreen)
+document.addEventListener('fullscreenchange', syncFullscreen)
+document.addEventListener('webkitfullscreenchange', syncFullscreen)
+if (!enterFullscreen) fsButton.hidden = true // ex.: iPhone/iPad não permitem
+syncFullscreen()
+stage.append(fsButton)
 
 /* ---------- navegação ---------- */
 
@@ -344,7 +379,7 @@ resetIdle()
 addEventListener('keydown', event => {
   if (event.key === 'Escape') go('menu')
   if (event.key === 'f' || event.key === 'F') {
-    document.fullscreenElement ? document.exitFullscreen() : document.documentElement.requestFullscreen?.().catch(() => {})
+    toggleFullscreen()
   }
 })
 addEventListener('contextmenu', event => event.preventDefault())
