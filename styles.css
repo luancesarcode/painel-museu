@@ -68,11 +68,11 @@ noscript { color: #fff; }
 
 .tone-green .head, .tone-green .title { color: #f9e04b; }
 .tone-green .head span { color: #8fe36a; }
-.tone-green .tone-green .tone-green .period { color: #f9e04b; }
+.tone-green .period { color: #f9e04b; }
 .tone-blue .head, .tone-blue .title { color: #f5c54d; }
-.tone-blue .tone-blue .tone-blue .period { color: #55e0f0; }
+.tone-blue .period { color: #55e0f0; }
 .tone-gold .head, .tone-gold .title, .tone-gold .period { color: var(--gold); }
-.tone-gold .tone-gold .detail.tone-gold { background: radial-gradient(ellipse at 60% 40%, #5b3b1b, #17110a 70%); }
+.detail.tone-gold { background: radial-gradient(ellipse at 60% 40%, #5b3b1b, #17110a 70%); }
 
 /* Vídeo vertical sobre o slide */
 .video-wrap { position: absolute; border-radius: 6px; overflow: hidden; background: #000; box-shadow: 0 8px 28px rgba(0, 0, 0, .6); }
@@ -125,7 +125,7 @@ noscript { color: #fff; }
 .copy.scrolls { -webkit-mask-image: linear-gradient(#000 88%, transparent); mask-image: linear-gradient(#000 88%, transparent); padding-bottom: 50px; }
 
 /* Barra de navegação única, fixa na base e fora do conteúdo */
-.dock { --dock: #f5b83d; --dock-bg: linear-gradient(#a8631b, #6a3a0c); position: absolute; left: 50%; bottom: 18px; z-index: 10; display: flex; align-items: center; gap: 14px; padding: 10px; border-radius: 60px; background: rgba(8, 10, 14, .8); -webkit-backdrop-filter: blur(10px); backdrop-filter: blur(10px); border: 2px solid var(--dock); box-shadow: 0 10px 30px rgba(0, 0, 0, .55); transform: translateX(-50%); transition: opacity .3s, transform .3s; }
+.dock { --dock: #f5b83d; --dock-bg: linear-gradient(#a8631b, #6a3a0c); position: absolute; left: 50%; bottom: 10px; z-index: 10; display: flex; align-items: center; gap: 14px; padding: 10px; border-radius: 60px; background: rgba(8, 10, 14, .8); -webkit-backdrop-filter: blur(10px); backdrop-filter: blur(10px); border: 2px solid var(--dock); box-shadow: 0 10px 30px rgba(0, 0, 0, .55); transform: translateX(-50%); transition: opacity .3s, transform .3s; }
 .dock[data-mode="hidden"] { opacity: 0; pointer-events: none; transform: translate(-50%, 24px); }
 .dock[data-tone="green"] { --dock: #86d44f; --dock-bg: linear-gradient(#3f8f1f, #1f5a10); }
 .dock[data-tone="blue"] { --dock: #6c78ff; --dock-bg: linear-gradient(#3e46e6, #1c2593); }
@@ -143,7 +143,7 @@ noscript { color: #fff; }
 
 /* Legendas das miniaturas das grades (Curiosidades e Aplicações) */
 .cap-tile { display: block; }
-.cap { position: absolute; left: -18px; right: -18px; bottom: 0; height: 64px; display: flex; align-items: flex-start; justify-content: center; text-align: center; font: 700 28px/1.14 "Open Sans", system-ui, sans-serif; color: #fff7d6; text-shadow: 0 0 10px rgba(0, 0, 0, .95), 0 2px 4px rgba(0, 0, 0, .95); pointer-events: none; }
+.cap { position: absolute; left: -18px; right: -18px; top: 313px; height: 62px; display: flex; align-items: flex-start; justify-content: center; text-align: center; font: 700 28px/1.1 "Open Sans", system-ui, sans-serif; color: #fff7d6; text-shadow: 0 0 10px rgba(0, 0, 0, .95), 0 2px 4px rgba(0, 0, 0, .95); pointer-events: none; }
 .tone-blue .cap { color: #d9f8ff; }
 .tile span { font-size: 27px; }
 .tile span b { font-size: 34px; }

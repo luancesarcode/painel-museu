@@ -17,7 +17,7 @@ export const themes = {
 
 // Cada tema tem folhas de grade: uma imagem de fundo com as miniaturas já desenhadas, mais as áreas de
 // toque ("tiles") na mesma ordem das miniaturas. As folhas de um tema ficam lado a lado numa faixa rolável.
-const sheet = (bg, items) => ({ bg, tiles: grid(colsA, colsA, 175, 580, 297, 297 + 64), items })
+const sheet = (bg, items) => ({ bg, tiles: grid(colsA, colsA, 175, 580, 297, 297 + 80), items })
 
 // Legendas das miniaturas (refeitas em HTML, maiores que as do slide).
 export const captions = {
