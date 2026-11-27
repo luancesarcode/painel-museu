@@ -42,21 +42,18 @@ export const pages = {
 }
 
 export const HISTORY_PER_PAGE = 10
-export const historyPageIds = Array.from({ length: Math.ceil(timeline.length / HISTORY_PER_PAGE) }, (_, i) => (i === 0 ? 'historia' : `historia${i + 1}`))
-historyPageIds.forEach((id, i) => {
-  pages[id] = {
-    theme: 'historia', bg: 'deck/historia.webp', custom: true,
-    next: historyPageIds[(i + 1) % historyPageIds.length], prev: historyPageIds[(i - 1 + historyPageIds.length) % historyPageIds.length],
-    index: i, total: historyPageIds.length,
-    // O fundo foi limpo (sem os quadros pretos); as miniaturas são desenhadas em HTML, todas do mesmo tamanho.
-    tiles: [
-      ...[138, 482, 826, 1171, 1515].map(x => ({ x, y: 178, w: 297, h: 297 })),
-      ...[145, 489, 834, 1178, 1522].map(x => ({ x, y: 585, w: 297, h: 297 })),
-    ],
-    items: timeline.slice(i * HISTORY_PER_PAGE, (i + 1) * HISTORY_PER_PAGE).map(event => event.id),
-    back: { x: 1573, y: 990, w: 312, h: 50 },
-  }
-})
+// A História é uma única tela com uma faixa rolável (uma "página" de 10 eventos por vez).
+pages.historia = {
+  theme: 'historia', bg: 'deck/historia.webp', custom: true,
+  strip: Array.from({ length: Math.ceil(timeline.length / HISTORY_PER_PAGE) }, (_, i) =>
+    timeline.slice(i * HISTORY_PER_PAGE, (i + 1) * HISTORY_PER_PAGE).map(event => event.id)),
+  // O fundo foi limpo (sem os quadros pretos); as miniaturas são desenhadas em HTML, todas do mesmo tamanho.
+  tiles: [
+    ...[138, 482, 826, 1171, 1515].map(x => ({ x, y: 178, w: 297, h: 297 })),
+    ...[145, 489, 834, 1178, 1522].map(x => ({ x, y: 585, w: 297, h: 297 })),
+  ],
+  back: { x: 1573, y: 990, w: 312, h: 50 },
+}
 
 // Fichas que têm slide próprio no original: imagem do slide + vídeo vertical por cima.
 export const slideDetails = {

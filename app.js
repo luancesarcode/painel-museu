@@ -64,27 +64,60 @@ function buildPage(id) {
   const page = pages[id]
   const theme = themes[page.theme]
   let html = `<img class="bg" src="${page.bg}" alt="">`
-  if (page.custom) {
-    html += `<h1 class="sr">${theme.name}</h1>`
-    html += page.tiles.map((rect, i) => {
-      const item = byId[page.items[i]]
-      if (!item) return `<div class="tile empty" style="${box(rect)}" aria-hidden="true"></div>`
-      return `<button type="button" class="tile ${item.hazard ? 'hazard' : ''}" style="${box(rect)}" data-go="item:${item.id}" aria-label="${esc(item.period ? `${item.period}: ${item.title}` : item.title)}">
-        <img src="assets/${item.image}.webp" alt="">
-        <span>${item.period ? `<b>${esc(item.period)}</b>` : ''}${esc(item.title)}</span></button>`
-    }).join('')
-    if (page.total > 1) {
-      html += `<button type="button" class="nav-arrow prev" style="${box({ ...arrow, x: arrow.x - 110 })}" data-go="${page.prev}" aria-label="Página anterior">${arrowSvg}</button>
-        <button type="button" class="nav-arrow next" style="${box(arrow)}" data-go="${page.next}" aria-label="Próxima página">${arrowSvg}</button>
-        <div class="page-count" aria-hidden="true">${page.index + 1} / ${page.total}</div>`
-    }
+  if (page.strip) {
+    html += `<h1 class="sr">${theme.name}</h1>
+      <div class="strip"><div class="strip-track">${page.strip.map(ids => `<div class="strip-page">${page.tiles.map((rect, i) => tileHtml(rect, byId[ids[i]])).join('')}</div>`).join('')}</div></div>
+      <button type="button" class="nav-arrow prev" style="${box({ ...arrow, x: arrow.x - 110 })}" data-scroll="-1" aria-label="Página anterior">${arrowSvg}</button>
+      <button type="button" class="nav-arrow next" style="${box(arrow)}" data-scroll="1" aria-label="Próxima página">${arrowSvg}</button>
+      <div class="page-count" aria-hidden="true">1 / ${page.strip.length}</div>`
   } else {
     html += `<h1 class="sr">${theme.name}</h1>`
     html += page.tiles.map((rect, i) => hot(rect, byId[page.items[i]].title, `item:${page.items[i]}`)).join('')
   }
-  if (page.next && !page.custom) html += hot(arrow, 'Próxima página', page.next, 'hot-round')
+  if (page.next) html += hot(arrow, 'Próxima página', page.next, 'hot-round')
   html += backToMenu(page.back)
-  screen(id, `page tone-${theme.tone}`, html)
+  const el = screen(id, `page tone-${theme.tone}`, html)
+  if (page.strip) initStrip(el, page.strip.length)
+}
+
+function tileHtml(rect, item) {
+  if (!item) return `<div class="tile empty" style="${box(rect)}" aria-hidden="true"></div>`
+  return `<button type="button" class="tile ${item.hazard ? 'hazard' : ''}" style="${box(rect)}" data-go="item:${item.id}" aria-label="${esc(item.period ? `${item.period}: ${item.title}` : item.title)}">
+    <img src="assets/${item.image}.webp" alt="" loading="lazy">
+    <span>${item.period ? `<b>${esc(item.period)}</b>` : ''}${esc(item.title)}</span></button>`
+}
+
+// Faixa rolável da História: deslizar com o dedo, rodinha do mouse ou setas.
+function initStrip(el, total) {
+  const strip = el.querySelector('.strip')
+  const count = el.querySelector('.page-count')
+  const index = () => Math.min(total - 1, Math.max(0, Math.round(strip.scrollLeft / W)))
+  // "target" é a página pedida; cliques rápidos nas setas somam em vez de se perderem no meio da animação.
+  let target = 0
+  const goTo = i => {
+    target = (i + total) % total
+    strip.scrollTo({ left: target * W, behavior: 'smooth' })
+  }
+  strip.addEventListener('scrollend', () => { target = index() })
+  strip.addEventListener('scroll', () => { count.textContent = `${index() + 1} / ${total}` }, { passive: true })
+  let wheelLock = 0
+  strip.addEventListener('wheel', event => {
+    event.preventDefault()
+    const now = Date.now()
+    if (now < wheelLock) return
+    const delta = Math.abs(event.deltaY) > Math.abs(event.deltaX) ? event.deltaY : event.deltaX
+    if (Math.abs(delta) < 4) return
+    wheelLock = now + 550
+    goTo(target + Math.sign(delta))
+  }, { passive: false })
+  el.addEventListener('click', event => {
+    const nav = event.target.closest('[data-scroll]')
+    if (nav) goTo(target + Number(nav.dataset.scroll))
+  })
+  el.addEventListener('keydown', event => {
+    if (event.key === 'ArrowRight') goTo(target + 1)
+    if (event.key === 'ArrowLeft') goTo(target - 1)
+  })
 }
 
 /* ---------- fichas ---------- */
@@ -102,10 +135,11 @@ function videoBlock(src, rect) {
 function fitText(copy) {
   if (!copy) return
   let size = parseFloat(getComputedStyle(copy).fontSize)
-  while (copy.scrollHeight > copy.clientHeight + 1 && size > 22) {
+  while (copy.scrollHeight > copy.clientHeight + 1 && size > 30) {
     size -= 1
     copy.style.fontSize = `${size}px`
   }
+  copy.classList.toggle('scrolls', copy.scrollHeight > copy.clientHeight + 1)
 }
 
 function buildDetail(id) {
@@ -257,6 +291,19 @@ stage.addEventListener('load', event => {
     frame.style.height = `${Math.min(740, 700 / (img.naturalWidth / img.naturalHeight))}px`
   }
 }, true)
+
+// Deslizar para o lado troca de página nas grades de Curiosidades e Aplicações.
+let swipe = null
+stage.addEventListener('pointerdown', event => { swipe = { x: event.clientX, y: event.clientY, t: Date.now() } })
+stage.addEventListener('pointerup', event => {
+  if (!swipe) return
+  const dx = event.clientX - swipe.x
+  const dy = event.clientY - swipe.y
+  const fast = Date.now() - swipe.t < 700
+  swipe = null
+  const page = pages[current]
+  if (page?.next && !page.strip && fast && Math.abs(dx) > 140 * parseFloat(stage.style.getPropertyValue('--scale') || 1) && Math.abs(dy) < Math.abs(dx) / 2) go(page.next)
+})
 
 /* ---------- palco, ociosidade e modo quiosque ---------- */
 
