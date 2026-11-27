@@ -1,3 +1,4 @@
+import { timeline } from './historia.js'
 const orau = ['Museu da Radiação e Radioatividade (ORAU)', 'https://orau.org/health-physics-museum/collection/index.html']
 const industria = ['Aplicações de radioisótopos (AIEA)', 'https://www-pub.iaea.org/MTCD/Publications/PDF/te_652_web.pdf']
 const tecnologia = ['Aplicações da tecnologia de radiação (AIEA)', 'https://www-pub.iaea.org/MTCD/Publications/PDF/TE-1763_E_web.pdf']
@@ -11,11 +12,11 @@ export const sections = {
   aplicacoes: 'Aplicações modernas',
 }
 
-const history = [
-  ['raios-x', 'A descoberta dos raios X', 'Uma imagem do interior do corpo.', 'Em 1895, Wilhelm Conrad Röntgen identificou uma radiação capaz de atravessar tecidos e impressionar uma chapa fotográfica. A descoberta abriu caminho para a radiografia.', { image: 'medicina', period: '1895', source: ['Prêmio Nobel de Física de 1901', 'https://www.nobelprize.org/prizes/physics/1901/rontgen/facts/'] }],
-  ['becquerel', 'A radioatividade natural', 'Uma descoberta feita com sais de urânio.', 'Em 1896, Henri Becquerel observou que sais de urânio impressionavam chapas fotográficas mesmo sem terem sido expostos à luz. A emissão vinha do próprio material.', { image: 'atomo', object: true, period: '1896', source: ['Prêmio Nobel de Física de 1903', 'https://www.nobelprize.org/prizes/physics/1903/becquerel/facts/'] }],
-  ['marie-curie', 'Marie Curie e os novos elementos', 'A investigação que revelou o polônio e o rádio.', 'Marie e Pierre Curie identificaram o polônio e o rádio em 1898. Marie compartilhou o Nobel de Física em 1903 e recebeu o Nobel de Química em 1911.', { image: 'curie', object: true, period: '1898', source: ['Prêmio Nobel de Química de 1911', 'https://www.nobelprize.org/prizes/chemistry/1911/marie-curie/facts/'] }],
-]
+// Linha do tempo completa (1803 – 2026), com várias fotos por evento.
+const history = timeline.map(event => ({
+  id: event.id, section: 'historia', title: event.title, summary: '', description: event.text,
+  image: event.images[0], images: event.images, period: event.year, hazard: event.hazard,
+}))
 
 const curiosities = [
   ['trem', 'Trem atômico', 'Uma locomotiva da era atômica.', 'O slide apresenta uma concepção artística de trem nuclear. A ideia fazia parte das propostas de aplicar a energia nuclear ao transporte.'],
@@ -70,7 +71,7 @@ function entries(section, rows) {
 }
 
 export const exhibits = [
-  ...entries('historia', history),
+  ...history,
   ...entries('curiosidades', curiosities),
   ...entries('aplicacoes', applications),
 ]
